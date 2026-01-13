@@ -23,7 +23,7 @@ void buzzer_start(void);
 void buzzer_stop(void);
 void spawn_target(int *x, int *y, int *vx, int *vy, int r);
 void joystick_update(int *cross_x, int *cross_y, int max_speed);
-void target_update(int *target_x, int *target_y, int *target_vx, int *target_vy, int target_r);
+void target_update_diff(int old_x, int old_y, int *x, int *y, int *vx, int *vy, int r);
 int button_pressed(void);
 void display_status(int score, int counter);
 void game_start(int *cross_x, int *cross_y, int *target_x, int *target_y, int *target_vx, int *target_vy, int target_r);
@@ -75,6 +75,8 @@ int main(void)
     int button_prev = 1;
     int restart_prev = 1;
     int restart_pressed = 0;
+    int old_target_x = 0, old_target_y = 0;
+
     while(1)
     {
         // Neustart abfragen
@@ -108,14 +110,18 @@ int main(void)
 
             // Moorhuhn aktualisieren
             if(target_alive)
-                target_update(&target_x, &target_y, &target_vx, &target_vy, target_r);
+            {
+                old_target_x = target_x;
+                old_target_y = target_y;
+                target_update_diff(old_target_x, old_target_y, &target_x, &target_y, &target_vx, &target_vy, target_r);
+            }
 
             // Schuss abfragen
             int pressed = button_pressed();
             if(pressed && !button_prev)
             {
                 buzzer_start();
-                __delay_cycles(200000); // ~200ms
+                __delay_cycles(200000); 
                 buzzer_stop();
 
                 if(target_alive)
@@ -226,18 +232,6 @@ void joystick_update(int *cross_x, int *cross_y, int max_speed)
     if(*cross_y > Display_y-4) *cross_y = Display_y-4;
 }
 
-void target_update(int *target_x, int *target_y, int *target_vx, int *target_vy, int target_r)
-{
-    draw_circle(*target_x, *target_y, target_r, 0xFFFFFFL);
-    *target_x += *target_vx;
-    *target_y += *target_vy;
-
-    if(*target_x - target_r < 0 || *target_x + target_r > Display_x) *target_vx = -*target_vx;
-    if(*target_y - target_r < 0 || *target_y + target_r > Display_y) *target_vy = -*target_vy;
-
-    draw_circle(*target_x, *target_y, target_r, 0xFF0000L);
-}
-
 int button_pressed(void)
 {
     return !(P3IN & BUTTON);
@@ -265,7 +259,6 @@ void display_status(int score, int counter)
     }
 }
 
-
 void game_start(int *cross_x, int *cross_y, int *target_x, int *target_y, int *target_vx, int *target_vy, int target_r)
 {
     score = 0;
@@ -277,4 +270,45 @@ void game_start(int *cross_x, int *cross_y, int *target_x, int *target_y, int *t
 
     spawn_target(target_x, target_y, target_vx, target_vy, target_r);
     draw_cross(*cross_x, *cross_y, 0x0000FFL);
+}
+
+void target_update_diff(int old_x, int old_y, int *x, int *y, int *vx, int *vy, int r)
+{
+    // Bewegung
+    *x += *vx;
+    *y += *vy;
+
+    // Wände abprallen
+    if(*x - r < 0 || *x + r > Display_x) *vx = -*vx;
+    if(*y - r < 0 || *y + r > Display_y) *vy = -*vy;
+
+    // Bounding Box berechnen (nur Bereich, der sich ändern könnte)
+    int min_x = old_x < *x ? old_x - r : *x - r;
+    int max_x = old_x > *x ? old_x + r : *x + r;
+    int min_y = old_y < *y ? old_y - r : *y - r;
+    int max_y = old_y > *y ? old_y + r : *y + r;
+
+    // Pixel-differenz zeichnen
+    for(int py = min_y; py <= max_y; py++)
+    {
+        if(py < 0 || py >= Display_y) continue; // außerhalb Display
+        for(int px = min_x; px <= max_x; px++)
+        {
+            if(px < 0 || px >= Display_x) continue; // außerhalb Display
+
+            int old_in = (px - old_x)*(px - old_x) + (py - old_y)*(py - old_y) <= r*r;
+            int new_in = (px - *x)*(px - *x) + (py - *y)*(py - *y) <= r*r;
+
+            if(old_in && !new_in)
+            {
+                // Pixel gehört nicht mehr zum Kreis → Hintergrundfarbe
+                draw(px, py, 1, 1, 0xFFFFFFL);
+            }
+            else if(!old_in && new_in)
+            {
+                // Pixel neu zum Kreis → Kreisfarbe
+                draw(px, py, 1, 1, 0xFF0000L);
+            }
+        }
+    }
 }
