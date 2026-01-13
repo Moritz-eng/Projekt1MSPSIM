@@ -74,11 +74,11 @@ int main(void)
 
     int button_prev = 1;
     int restart_prev = 1;
-
+    int restart_pressed = 0;
     while(1)
     {
         // Neustart abfragen
-        int restart_pressed = !(P4IN & RESTART_BUTTON);
+        restart_pressed = !(P4IN & RESTART_BUTTON);
         if(restart_pressed && !restart_prev)
         {
             draw(0, 0, Display_x, Display_y, 0xFFFFFFL); // Display löschen
@@ -143,7 +143,8 @@ int main(void)
 // -------------------- Funktionen --------------------
 void draw_cross(int x, int y, uint32_t color)
 {
-    draw(x,y,1,1,color);
+    draw(x-3, y,   7, 1, color);
+    draw(x,   y-3, 1, 7, color);
 }
 
 void draw_circle(int cx, int cy, int r, uint32_t color)
@@ -244,13 +245,26 @@ int button_pressed(void)
 
 void display_status(int score, int counter)
 {
-    char buf[16];
-    sprintf(buf, "Score:%d", score);
-    setText(0,0,buf,0x000000L,0xFFFFFFL);
+    static int last_score = -1;
+    static int last_counter = -1;
 
-    sprintf(buf, "Val:%d", counter);
-    setText(0,10,buf,0x000000L,0xFFFFFFL);
+    char buf[16];
+
+    if(score != last_score)
+    {
+        sprintf(buf, "Score:%d   ", score); // Spaces zum Überschreiben
+        setText(0,0,buf,0x000000L,0xFFFFFFL);
+        last_score = score;
+    }
+
+    if(counter != last_counter)
+    {
+        sprintf(buf, "Val:%d   ", counter);
+        setText(0,10,buf,0x000000L,0xFFFFFFL);
+        last_counter = counter;
+    }
 }
+
 
 void game_start(int *cross_x, int *cross_y, int *target_x, int *target_y, int *target_vx, int *target_vy, int target_r)
 {
