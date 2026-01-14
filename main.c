@@ -10,6 +10,7 @@
 #define DEADZONE   5
 #define MAX_SPEED 6
 #define GAME_START_VALUE 300  // Startwert
+#define UI_HEIGHT 25
 
 #define BUTTON BIT7       // P3.7 Schuss-Button
 #define RESTART_BUTTON BIT0  // P4.0 Neustart
@@ -32,6 +33,8 @@ void game_start(int *cross_x, int *cross_y, int *target_x, int *target_y, int *t
 int score = 0;
 int game_counter = GAME_START_VALUE;
 int game_running = 0; // 0 = nicht aktiv, 1 = aktiv
+int last_score = -1;
+int last_counter = -1;
 
 // -------------------- Main --------------------
 int main(void)
@@ -77,8 +80,11 @@ int main(void)
     int restart_pressed = 0;
     int old_target_x = 0, old_target_y = 0;
 
+   
+
     while(1)
     {
+        draw(0, UI_HEIGHT, Display_x, 1, 0x000000L); // Schwarze Linie
         // Neustart abfragen
         restart_pressed = !(P4IN & RESTART_BUTTON);
         if(restart_pressed && !restart_prev)
@@ -190,8 +196,8 @@ void buzzer_stop(void)
 
 void spawn_target(int *x, int *y, int *vx, int *vy, int r)
 {
-    *x = 10 + rand() % (Display_x - 20);
-    *y = 10 + rand() % (Display_y - 20);
+    *x = r + 1 + rand() % (Display_x - 2*r - 2);
+    *y = UI_HEIGHT + r + 1 + rand() % (Display_y - (UI_HEIGHT + 2*r + 2));
     *vx = (rand() % 3) + 1;
     *vy = (rand() % 3) + 1;
     if(rand()%2) *vx = -*vx;
@@ -228,7 +234,7 @@ void joystick_update(int *cross_x, int *cross_y, int max_speed)
 
     if(*cross_x < 4) *cross_x = 4;
     if(*cross_x > Display_x-4) *cross_x = Display_x-4;
-    if(*cross_y < 4) *cross_y = 4;
+    if(*cross_y < UI_HEIGHT + 4) *cross_y = UI_HEIGHT + 4;
     if(*cross_y > Display_y-4) *cross_y = Display_y-4;
 }
 
@@ -239,9 +245,6 @@ int button_pressed(void)
 
 void display_status(int score, int counter)
 {
-    static int last_score = -1;
-    static int last_counter = -1;
-
     char buf[16];
 
     if(score != last_score)
@@ -264,6 +267,8 @@ void game_start(int *cross_x, int *cross_y, int *target_x, int *target_y, int *t
     score = 0;
     game_counter = GAME_START_VALUE;
     game_running = 1;
+    last_score = -1;
+    last_counter = -1;
 
     *cross_x = Display_x/2;
     *cross_y = Display_y/2;
@@ -280,7 +285,7 @@ void target_update_diff(int old_x, int old_y, int *x, int *y, int *vx, int *vy, 
 
     // Wände abprallen
     if(*x - r < 0 || *x + r > Display_x) *vx = -*vx;
-    if(*y - r < 0 || *y + r > Display_y) *vy = -*vy;
+    if(*y - r < UI_HEIGHT + 2 || *y + r > Display_y) *vy = -*vy;
 
     // Bounding Box berechnen (nur Bereich, der sich ändern könnte)
     int min_x = old_x < *x ? old_x - r : *x - r;
