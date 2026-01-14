@@ -169,13 +169,41 @@ void draw_circle(int cx, int cy, int r, uint32_t color)
 
 void erase_cross(int x, int y, int target_x, int target_y, int target_r, int target_alive)
 {
-    int dx = x - target_x;
-    int dy = y - target_y;
-    if(target_alive && dx*dx + dy*dy <= target_r*target_r)
-        draw_circle(target_x, target_y, target_r, 0xFF0000L);
-    else
-        draw_cross(x, y, 0xFFFFFFL);
+    // horizontale Linie löschen
+    for(int i = -3; i <= 3; i++)
+    {
+        int px = x + i;
+        int py = y;
+
+        if(px < 0 || px >= Display_x || py < 0 || py >= Display_y) continue;
+
+        int dx = px - target_x;
+        int dy = py - target_y;
+
+        if(target_alive && dx*dx + dy*dy <= target_r*target_r)
+            draw(px, py, 1, 1, 0xFF0000L);  // Kreisfarbe
+        else
+            draw(px, py, 1, 1, 0xFFFFFFL);  // Hintergrund
+    }
+
+    // vertikale Linie löschen
+    for(int i = -3; i <= 3; i++)
+    {
+        int px = x;
+        int py = y + i;
+
+        if(px < 0 || px >= Display_x || py < 0 || py >= Display_y) continue;
+
+        int dx = px - target_x;
+        int dy = py - target_y;
+
+        if(target_alive && dx*dx + dy*dy <= target_r*target_r)
+            draw(px, py, 1, 1, 0xFF0000L);
+        else
+            draw(px, py, 1, 1, 0xFFFFFFL);
+    }
 }
+
 
 void buzzer_start(void)
 {
