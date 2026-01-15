@@ -4,6 +4,9 @@
 #include "graphics.h"
 #include "input.h"
 #include "audio.h"
+#include "keyboard.h"
+#include <string.h>
+#include "ST7735.h"
 
 int main(void) {
     // Watchdog Timer stoppen
@@ -14,7 +17,37 @@ int main(void) {
     input_init();
     audio_init();
 
+    // Tastatur-Phase
+    KeyboardState keyboard;
+    keyboard_init(&keyboard);
+    
+    clear_screen();
+    keyboard_draw();
+    draw_key_selected(0, 0);
+
+    
+    // Warte auf Namenseingabe
+    while (!keyboard.done) {
+        keyboard_handle_input(&keyboard);
+        keyboard_update(&keyboard);
+        __delay_cycles(10000);
+    }
+    
+    // Name wurde eingegeben, Spiel starten
+    clear_screen();
+    
+    // Optional: Name anzeigen
+    if (keyboard.input_pos > 0) {
+        char welcome[32];
+        welcome[0] = '\0';
+        strcat(welcome, "HI ");
+        strcat(welcome, keyboard.input);
+        setText(10, 10, welcome, COLOR_BLACK, COLOR_WHITE);
+        __delay_cycles(2000000); // 2 Sekunden Pause
+    }
+    
     // Spiel initialisieren
+    clear_screen();
     GameState game;
     game_init(&game);
 
