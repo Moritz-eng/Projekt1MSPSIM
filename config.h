@@ -20,6 +20,7 @@
 // Pin Definitionen
 #define BUTTON BIT7          // P3.7 Schuss-Button
 #define RESTART_BUTTON BIT0  // P4.0 Neustart
+                             // P2.4 Display Backlight (Jumper Pos.3) passiert in ST7735.c
 #define BUZZER BIT5          // P2.5 Buzzer
 
 // Farben (RGB 24-bit)
