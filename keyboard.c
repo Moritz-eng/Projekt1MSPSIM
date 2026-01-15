@@ -208,7 +208,7 @@ void keyboard_handle_input(KeyboardState* kb) {
             }
         } else {
             char c = keyboard_get_char(kb->cursor_x, kb->cursor_y);
-            if (c && kb->input_pos < 15) { // Buchstaben A-Z
+            if (c && kb->input_pos < 8) { // Buchstaben A-Z
                 kb->input[kb->input_pos++] = c;
                 kb->input[kb->input_pos] = '\0';
                 kb->input_changed = 1;

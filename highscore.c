@@ -51,7 +51,7 @@ void highscore_add(char* name, int score) {
         // Prüfen, ob Flash leer ist (0xFFFF) -> dann als leerer Eintrag behandeln
         if (flash_scores[i].score == -1 || flash_scores[i].score == 0xFFFF) {
             current_scores[i].score = 0;
-            strcpy(current_scores[i].name, "---");
+            strcpy(current_scores[i].name, "--------");
         } else {
             current_scores[i] = flash_scores[i];
         }
@@ -92,15 +92,15 @@ void highscore_show(void) {
     draw(20, 22, 88, 1, COLOR_WHITE); // Unterstreichung
 
     for (i = 0; i < MAX_HIGHSCORES; i++) {
-        int y_pos = 40 + (i * 15);
+        int y_pos = 35 + (i * 15);
         int current_score = flash_scores[i].score;
 
         // Wenn Eintrag leer/ungültig (Flash erased state ist 0xFFFF -> -1 signed int)
         if (current_score == -1 || current_score == 0xFFFF) {
-            sprintf(buf, "%d. ---    0", i + 1);
+            sprintf(buf, "%d. --------  0", i + 1);
         } else {
             // Formatierung: "1. NAME   100"
-            sprintf(buf, "%d. %-6s %3d", i + 1, flash_scores[i].name, current_score);
+            sprintf(buf, "%d. %-8s %3d", i + 1, flash_scores[i].name, current_score);
         }
        
         // Farben: Platz 1 Gold (Gelb), Rest Weiß
@@ -108,7 +108,7 @@ void highscore_show(void) {
         setText(10, y_pos, buf, color, COLOR_BLACK);
     }
    
-    setText(10, 110, "PRESS RESTART", COLOR_BLUE, COLOR_BLACK);
+    setText(10, 110, "UP RIGHT BUTTON", COLOR_BLUE, COLOR_BLACK);
 }
 
 void highscore_clear(void) {

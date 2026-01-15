@@ -31,7 +31,7 @@ void game_start(GameState* state) {
     state->crosshair.old_y = state->crosshair.y;
     
     spawn_target(&state->target);
-    draw_cross(state->crosshair.x, state->crosshair.y, COLOR_BLUE);
+    draw_cross(state->crosshair.x, state->crosshair.y, COLOR_RED);
 }
 
 void game_update(GameState* state) {
@@ -53,7 +53,7 @@ void game_update(GameState* state) {
         state->crosshair.y != state->crosshair.old_y) {
         
         erase_cross(state->crosshair.old_x, state->crosshair.old_y, &state->target);
-        draw_cross(state->crosshair.x, state->crosshair.y, COLOR_BLUE);
+        draw_cross(state->crosshair.x, state->crosshair.y, COLOR_RED);
         
         state->crosshair.old_x = state->crosshair.x;
         state->crosshair.old_y = state->crosshair.y;

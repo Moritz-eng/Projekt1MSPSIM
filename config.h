@@ -26,7 +26,7 @@
 // Farben (RGB 24-bit)
 #define COLOR_WHITE 0xFFFFFFL
 #define COLOR_BLACK 0x000000L
-#define COLOR_BLUE 0x0000FFL
-#define COLOR_RED 0xFF0000L
+#define COLOR_BLUE 0xFF0000L
+#define COLOR_RED 0x0000FFL
 
 #endif // CONFIG_H

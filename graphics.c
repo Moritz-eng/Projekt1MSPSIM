@@ -86,7 +86,7 @@ void spawn_target(Target* target) {
     if (rand() % 2) target->vy = -target->vy;
     target->alive = 1;
     
-    draw_circle(target->x, target->y, target->radius, COLOR_RED);
+    draw_circle(target->x, target->y, target->radius, COLOR_BLUE);
 }
 
 void update_target(Target* target) {
@@ -128,7 +128,7 @@ void update_target(Target* target) {
             if (old_in && !new_in) {
                 draw(px, py, 1, 1, COLOR_WHITE);
             } else if (!old_in && new_in) {
-                draw(px, py, 1, 1, COLOR_RED);
+                draw(px, py, 1, 1, COLOR_BLUE);
             }
         }
     }
