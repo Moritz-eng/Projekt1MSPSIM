@@ -22,6 +22,7 @@ void keyboard_init(KeyboardState* kb) {
     kb->cursor_y = 0;
     kb->input_pos = 0;
     kb->done = 0;
+    kb->input_changed = 1;
     memset(kb->input, 0, sizeof(kb->input));
 }
 
@@ -142,10 +143,12 @@ void keyboard_update(KeyboardState* kb) {
         old_x = kb->cursor_x;
         old_y = kb->cursor_y;
     }
-
-    draw(10, 20, 110, 12, COLOR_WHITE);
-    if (kb->input_pos > 0)
-        setText(10, 20, kb->input, COLOR_BLACK, COLOR_WHITE);
+    if(kb->input_changed){
+        draw(10, 20, 110, 12, COLOR_WHITE);
+        if (kb->input_pos > 0)
+            setText(10, 20, kb->input, COLOR_BLACK, COLOR_WHITE);
+        kb->input_changed = 0;
+    }
 }
 
 // Eingaben verarbeiten
@@ -166,14 +169,16 @@ void keyboard_handle_input(KeyboardState* kb) {
             if (kb->cursor_x == 7) kb->cursor_x = 8; // Spring über leere Spalte
             if (kb->cursor_x > 8) kb->cursor_x = 8; // Max OK
         } else if (kb->cursor_x > 9) kb->cursor_x = 9;
-        joy_state.old_x = joy_state.x;
+        joy_state.old_x = 64;
+        joy_state.x = 64;
     } else if (dx < -1) {
         kb->cursor_x--;
         if (kb->cursor_y == 2) {
             if (kb->cursor_x == 7) kb->cursor_x = 6; // Spring über leere Spalte
             if (kb->cursor_x < 0) kb->cursor_x = 0;
         } else if (kb->cursor_x < 0) kb->cursor_x = 0;
-        joy_state.old_x = joy_state.x;
+        joy_state.old_x = 64;
+        joy_state.x = 64;
     }
 
     // Vertikal
@@ -181,11 +186,13 @@ void keyboard_handle_input(KeyboardState* kb) {
         kb->cursor_y++;
         if (kb->cursor_y > 2) kb->cursor_y = 2;
         if (kb->cursor_y == 2 && kb->cursor_x > 8) kb->cursor_x = 8;
-        joy_state.old_y = joy_state.y;
+        joy_state.old_y = 64;
+        joy_state.y =64;
     } else if (dy < -1) {
         kb->cursor_y--;
         if (kb->cursor_y < 0) kb->cursor_y = 0;
-        joy_state.old_y = joy_state.y;
+        joy_state.old_y = 64;
+        joy_state.y =64;
     }
 
     // Button (Flankenerkennung)
@@ -197,12 +204,14 @@ void keyboard_handle_input(KeyboardState* kb) {
             if (kb->input_pos > 0) { // DEL
                 kb->input_pos--;
                 kb->input[kb->input_pos] = '\0';
+                kb->input_changed = 1;
             }
         } else {
             char c = keyboard_get_char(kb->cursor_x, kb->cursor_y);
             if (c && kb->input_pos < 15) { // Buchstaben A-Z
                 kb->input[kb->input_pos++] = c;
                 kb->input[kb->input_pos] = '\0';
+                kb->input_changed = 1;
             }
         }
     }

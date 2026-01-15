@@ -34,7 +34,7 @@ int main(void) {
         while (!keyboard.done) {
             keyboard_handle_input(&keyboard);
             keyboard_update(&keyboard);
-            __delay_cycles(10000);
+            __delay_cycles(200000);
         }
        
         // Name fertig
