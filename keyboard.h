@@ -10,6 +10,7 @@ typedef struct {
     char input[16];
     int input_pos;
     int done;
+    int input_changed;
 } KeyboardState;
 
 // Tastatur-Funktionen
