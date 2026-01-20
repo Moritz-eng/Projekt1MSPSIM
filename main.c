@@ -48,6 +48,10 @@ int main(void) {
             keyboard_update(&keyboard);
             __delay_cycles(200000);
         }
+
+        if (keyboard.input[0] != '\0'){
+            strncpy(last_used_name, keyboard.input, 15);
+        }
        
         show_start_screen(keyboard.input); 
 

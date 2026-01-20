@@ -12,6 +12,8 @@ static const char* keyboard_layout[] = {
     "UVWXYZ"        // Zeile 2, Spalten 0–5, Spalten 6–9 für DEL/OK
 };
 
+char last_used_name[16] = "";
+
 static const int KEY_WIDTH = 12;
 static const int KEY_HEIGHT = 15;
 static const int KEY_START_Y = 40;
@@ -38,6 +40,18 @@ char keyboard_get_char(int x, int y) {
 // Zeichnet die komplette Tastatur (einmalig)
 void keyboard_draw(void) {
     setText(10, 5, "ENTER NAME:", COLOR_BLACK, COLOR_WHITE);
+
+    int x = KEY_START_X;
+    int y = KEY_START_Y + 3 * KEY_HEIGHT;
+    draw(x,y, DISPLAY_WIDTH - 8, KEY_HEIGHT - 2, COLOR_WHITE);
+    if (last_used_name[0] != '\0'){
+        char buf[32];
+        sprintf(buf, "Last Name");
+        setText(x + 3, y + 2, buf, COLOR_BLACK, COLOR_WHITE);
+    }
+    else{
+        setText(x + 3, y +2, "Kein Name", COLOR_BLACK, COLOR_WHITE);
+    }
 
     for (int row = 0; row < 3; row++) {
         for (int col = 0; col < 10; col++) {
@@ -81,6 +95,13 @@ void draw_key_normal(int col, int row) {
     int x = KEY_START_X + col * KEY_WIDTH;
     int y = KEY_START_Y + row * KEY_HEIGHT;
 
+    if (row == 3) {
+        draw(KEY_START_X, y, DISPLAY_WIDTH - 8, (KEY_HEIGHT * 2) - 2, COLOR_WHITE);
+        setText(KEY_START_X + 5, y + 2, "Last Name:", COLOR_BLACK, COLOR_WHITE);
+        setText(KEY_START_X + 5, y +14, last_used_name, COLOR_RED, COLOR_WHITE);
+        return;
+    }
+
     if (row == 2) {
         if (col == 6) {
             draw(x, y, KEY_WIDTH * 2 - 2, KEY_HEIGHT - 2, COLOR_RED);
@@ -105,6 +126,13 @@ void draw_key_normal(int col, int row) {
 void draw_key_selected(int col, int row) {
     int x = KEY_START_X + col * KEY_WIDTH;
     int y = KEY_START_Y + row * KEY_HEIGHT;
+
+    if (row == 3) {
+        draw(KEY_START_X, y, DISPLAY_WIDTH - 8, (KEY_HEIGHT * 2) - 2, COLOR_BLUE);
+        setText(KEY_START_X + 5, y + 2, "Last Name:", COLOR_WHITE, COLOR_BLUE);
+        setText(KEY_START_X + 5, y +14, last_used_name, COLOR_WHITE, COLOR_BLUE);
+        return;
+    }
 
     if (row == 2) {
         if (col == 6) {
@@ -153,62 +181,88 @@ void keyboard_update(KeyboardState* kb) {
 
 // Eingaben verarbeiten
 void keyboard_handle_input(KeyboardState* kb) {
-    static Crosshair joy_state = {64,64,64,64};
+    static Crosshair joy_state = {64, 64, 64, 64};
     static int button_prev = 0;
 
+    // Joystick-Werte lesen
     joystick_update(&joy_state, 3);
 
     int dx = joy_state.x - joy_state.old_x;
     int dy = joy_state.y - joy_state.old_y;
 
-    // Horizontal
+    // --- HORIZONTALE NAVIGATION ---
     if (dx > 1) {
         kb->cursor_x++;
-        if (kb->cursor_y == 2) {
-            if (kb->cursor_x == 6) kb->cursor_x = 6; // DEL
-            if (kb->cursor_x == 7) kb->cursor_x = 8; // Spring über leere Spalte
-            if (kb->cursor_x > 8) kb->cursor_x = 8; // Max OK
-        } else if (kb->cursor_x > 9) kb->cursor_x = 9;
-        joy_state.old_x = 64;
-        joy_state.x = 64;
+        if (kb->cursor_y == 2) { // Zeile mit DEL/OK
+            if (kb->cursor_x == 7) kb->cursor_x = 8; // Springe über Lücke zu OK
+            if (kb->cursor_x > 8) kb->cursor_x = 8;
+        } else if (kb->cursor_y == 3) { // Zeile mit "Letzter Name"
+            kb->cursor_x = 0; // In Zeile 3 gibt es nur ein breites Feld
+        } else if (kb->cursor_x > 9) {
+            kb->cursor_x = 9;
+        }
+        joy_state.old_x = 64; joy_state.x = 64;
     } else if (dx < -1) {
         kb->cursor_x--;
         if (kb->cursor_y == 2) {
-            if (kb->cursor_x == 7) kb->cursor_x = 6; // Spring über leere Spalte
+            if (kb->cursor_x == 7) kb->cursor_x = 6; // Springe über Lücke zu DEL
             if (kb->cursor_x < 0) kb->cursor_x = 0;
-        } else if (kb->cursor_x < 0) kb->cursor_x = 0;
-        joy_state.old_x = 64;
-        joy_state.x = 64;
+        } else if (kb->cursor_y == 3) {
+            kb->cursor_x = 0;
+        } else if (kb->cursor_x < 0) {
+            kb->cursor_x = 0;
+        }
+        joy_state.old_x = 64; joy_state.x = 64;
     }
 
-    // Vertikal
-    if (dy > 1) {
+    // --- VERTIKALE NAVIGATION ---
+    if (dy > 1) { // Runter
         kb->cursor_y++;
-        if (kb->cursor_y > 2) kb->cursor_y = 2;
+        if (kb->cursor_y > 3) kb->cursor_y = 3;
+       
+        // Korrektur der X-Position beim Zeilenwechsel
         if (kb->cursor_y == 2 && kb->cursor_x > 8) kb->cursor_x = 8;
-        joy_state.old_y = 64;
-        joy_state.y =64;
-    } else if (dy < -1) {
+        if (kb->cursor_y == 3) kb->cursor_x = 0; // In Zeile 3 nur Spalte 0 möglich
+       
+        joy_state.old_y = 64; joy_state.y = 64;
+    } else if (dy < -1) { // Hoch
         kb->cursor_y--;
         if (kb->cursor_y < 0) kb->cursor_y = 0;
-        joy_state.old_y = 64;
-        joy_state.y =64;
+       
+        // Falls wir von Zeile 3 hochkommen, Cursor mittig setzen
+        if (kb->cursor_y < 3 && kb->cursor_x == 0 && dx == 0) kb->cursor_x = 4;
+       
+        joy_state.old_y = 64; joy_state.y = 64;
     }
 
-    // Button (Flankenerkennung)
+    // --- BUTTON VERARBEITUNG ---
     int pressed = button_pressed();
     if (pressed && !button_prev) {
-        if (kb->cursor_y == 2 && kb->cursor_x == 8) {
-            kb->done = 1; // OK
+        if (kb->cursor_y == 3) {
+            // "Zuletzt verwendet" ausgewählt
+            if (last_used_name[0] != '\0') {
+                strncpy(kb->input, last_used_name, 15);
+                kb->input_pos = strlen(kb->input);
+                kb->input_changed = 1;
+            }
+        } else if (kb->cursor_y == 2 && kb->cursor_x == 8) {
+            // OK Button
+            if (kb->input_pos > 0) {
+                // Name im "Globalen" Speicher für das nächste Mal sichern
+                strncpy(last_used_name, kb->input, 15);
+                kb->done = 1;
+            }
         } else if (kb->cursor_y == 2 && kb->cursor_x == 6) {
-            if (kb->input_pos > 0) { // DEL
+            // DEL Button
+            if (kb->input_pos > 0) {
                 kb->input_pos--;
                 kb->input[kb->input_pos] = '\0';
                 kb->input_changed = 1;
             }
         } else {
+            // Normaler Buchstabe
             char c = keyboard_get_char(kb->cursor_x, kb->cursor_y);
-            if (c && kb->input_pos < 8) { // Buchstaben A-Z
+            if (c && kb->input_pos < 8) {
                 kb->input[kb->input_pos++] = c;
                 kb->input[kb->input_pos] = '\0';
                 kb->input_changed = 1;

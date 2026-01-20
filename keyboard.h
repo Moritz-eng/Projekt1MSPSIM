@@ -11,7 +11,9 @@ typedef struct {
     int input_pos;
     int done;
     int input_changed;
+    int on_last_name;
 } KeyboardState;
+extern char last_used_name[16];
 
 // Tastatur-Funktionen
 void keyboard_init(KeyboardState* kb);
