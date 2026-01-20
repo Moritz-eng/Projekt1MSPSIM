@@ -109,12 +109,13 @@ void update_target(Target* target) {
 
     int old_x = target->x;
     int old_y = target->y;
+    int size = (target->half_size * 2) + 1;
 
-    // Neue Position berechnen
+    // 1. Neue Position berechnen
     target->x += target->vx;
     target->y += target->vy;
 
-    // Wandkollision prüfen und Position korrigieren
+    // 2. Wandkollision prüfen und Position korrigieren
     if (target->x - target->half_size < 0) {
         target->x = target->half_size;
         target->vx = -target->vx;
@@ -132,32 +133,35 @@ void update_target(Target* target) {
         target->vy = -target->vy;
     }
 
-    // Minimales Rechteck berechnen, das sich verändert hat
-    int min_x = old_x < target->x ? old_x - target->half_size : target->x - target->half_size;
-    int max_x = old_x > target->x ? old_x + target->half_size : target->x + target->half_size;
-    int min_y = old_y < target->y ? old_y - target->half_size : target->y - target->half_size;
-    int max_y = old_y > target->y ? old_y + target->half_size : target->y + target->half_size;
+    // 3. Wenn keine Bewegung stattgefunden hat, abbrechen
+    if (old_x == target->x && old_y == target->y) return;
 
-    for (int y = min_y; y <= max_y; y++) {
-        if (y < 0 || y >= DISPLAY_HEIGHT) continue;
+    // 4. Inkrementelles Zeichnen (Streifen-Methode)
+    // Wir löschen nur die Bereiche, die das Target verlassen hat,
+    // und zeichnen nur die Bereiche neu, die neu hinzugekommen sind.
+   
+    // Horizontale Streifen (X-Achse)
+    if (target->x > old_x) {
+        // Bewegung nach rechts: links Streifen löschen, rechts Streifen zeichnen
+        draw(old_x - target->half_size, old_y - target->half_size, target->x - old_x, size, COLOR_WHITE);
+        draw(old_x + target->half_size + 1, target->y - target->half_size, target->x - old_x, size, COLOR_BLUE);
+    } else if (target->x < old_x) {
+        // Bewegung nach links: rechts Streifen löschen, links Streifen zeichnen
+        draw(target->x + target->half_size + 1, old_y - target->half_size, old_x - target->x, size, COLOR_WHITE);
+        draw(target->x - target->half_size, target->y - target->half_size, old_x - target->x, size, COLOR_BLUE);
+    }
 
-        for (int x = min_x; x <= max_x; x++) {
-            // Prüfen, ob Pixel im alten Quadrat war
-            int in_old = (x >= old_x - target->half_size && x <= old_x + target->half_size &&
-                          y >= old_y - target->half_size && y <= old_y + target->half_size);
-            // Prüfen, ob Pixel im neuen Quadrat ist
-            int in_new = (x >= target->x - target->half_size && x <= target->x + target->half_size &&
-                          y >= target->y - target->half_size && y <= target->y + target->half_size);
-
-            if (in_old && !in_new) {
-                draw(x, y, 1, 1, COLOR_WHITE); // nur alten Pixel löschen
-            } else if (!in_old && in_new) {
-                draw(x, y, 1, 1, COLOR_BLUE);  // nur neuen Pixel zeichnen
-            }
-        }
+    // Vertikale Streifen (Y-Achse)
+    if (target->y > old_y) {
+        // Bewegung nach unten: oben Streifen löschen, unten Streifen zeichnen
+        draw(target->x - target->half_size, old_y - target->half_size, size, target->y - old_y, COLOR_WHITE);
+        draw(target->x - target->half_size, old_y + target->half_size + 1, size, target->y - old_y, COLOR_BLUE);
+    } else if (target->y < old_y) {
+        // Bewegung nach oben: unten Streifen löschen, oben Streifen zeichnen
+        draw(target->x - target->half_size, target->y + target->half_size + 1, size, old_y - target->y, COLOR_WHITE);
+        draw(target->x - target->half_size, target->y - target->half_size, size, old_y - target->y, COLOR_BLUE);
     }
 }
-
 
 
 /* ================================

@@ -47,21 +47,27 @@ void game_update(GameState* state) {
 
     // Joystick aktualisieren
     joystick_update(&state->crosshair, MAX_SPEED);
+    
+    // Target aktualisieren
+    int target_moved = state->target.alive;
+    if (state->target.alive) {
+        update_target(&state->target);
+    }
 
     // Fadenkreuz aktualisieren
     if (state->crosshair.x != state->crosshair.old_x || 
-        state->crosshair.y != state->crosshair.old_y) {
+        state->crosshair.y != state->crosshair.old_y ||
+        target_moved) {
         
+        if (state->crosshair.x != state->crosshair.old_x || 
+        state->crosshair.y != state->crosshair.old_y){
         erase_cross(state->crosshair.old_x, state->crosshair.old_y, &state->target);
+        }
+
         draw_cross(state->crosshair.x, state->crosshair.y, COLOR_RED);
         
         state->crosshair.old_x = state->crosshair.x;
         state->crosshair.old_y = state->crosshair.y;
-    }
-
-    // Target aktualisieren
-    if (state->target.alive) {
-        update_target(&state->target);
     }
 }
 

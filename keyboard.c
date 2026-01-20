@@ -46,8 +46,8 @@ void keyboard_draw(void) {
 
             if (row == 2) {
                 if (col == 6) { // DEL
-                    draw(x, y, KEY_WIDTH * 2 - 2, KEY_HEIGHT - 2, 0xFF0000);
-                    setText(x + 1, y + 2, "DEL", COLOR_WHITE, 0xFF0000);
+                    draw(x, y, KEY_WIDTH * 2 - 2, KEY_HEIGHT - 2, COLOR_RED);
+                    setText(x + 1, y + 2, "DEL", COLOR_WHITE, COLOR_RED);
                 } else if (col == 8) { // OK
                     draw(x, y, KEY_WIDTH * 2 - 2, KEY_HEIGHT - 2, 0x00FF00);
                     setText(x + 3, y + 2, "OK", COLOR_BLACK, 0x00FF00);
@@ -83,8 +83,8 @@ void draw_key_normal(int col, int row) {
 
     if (row == 2) {
         if (col == 6) {
-            draw(x, y, KEY_WIDTH * 2 - 2, KEY_HEIGHT - 2, 0xFF0000);
-            setText(x + 1, y + 2, "DEL", COLOR_WHITE, 0xFF0000);
+            draw(x, y, KEY_WIDTH * 2 - 2, KEY_HEIGHT - 2, COLOR_RED);
+            setText(x + 1, y + 2, "DEL", COLOR_WHITE, COLOR_RED);
             return;
         } else if (col == 8) {
             draw(x, y, KEY_WIDTH * 2 - 2, KEY_HEIGHT - 2, 0x00FF00);
@@ -108,12 +108,12 @@ void draw_key_selected(int col, int row) {
 
     if (row == 2) {
         if (col == 6) {
-            draw(x, y, KEY_WIDTH * 2 - 2, KEY_HEIGHT - 2, 0xFFFF00);
-            setText(x + 1, y + 2, "DEL", COLOR_BLACK, 0xFFFF00);
+            draw(x, y, KEY_WIDTH * 2 - 2, KEY_HEIGHT - 2, COLOR_BLUE);
+            setText(x + 1, y + 2, "DEL", COLOR_BLACK, COLOR_BLUE);
             return;
         } else if (col == 8) {
-            draw(x, y, KEY_WIDTH * 2 - 2, KEY_HEIGHT - 2, 0xFFFF00);
-            setText(x + 3, y + 2, "OK", COLOR_BLACK, 0xFFFF00);
+            draw(x, y, KEY_WIDTH * 2 - 2, KEY_HEIGHT - 2, COLOR_BLUE);
+            setText(x + 3, y + 2, "OK", COLOR_BLACK, COLOR_BLUE);
             return;
         } else if (col > 5) return; // leere Spalten
     }
