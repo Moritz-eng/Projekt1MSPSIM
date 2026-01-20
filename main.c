@@ -9,6 +9,20 @@
 #include "ST7735.h"
 #include "highscore.h"
 
+void show_start_screen(char* name) {
+    clear_screen();
+
+    char buf[32];
+    sprintf(buf, "Hallo %s!", name);
+    setText(20, 30, buf, COLOR_RED, COLOR_WHITE);
+
+    setText(10, 60, "Ziel: Treffe das", COLOR_BLACK, COLOR_WHITE);
+    setText(10, 72, "blaue Quadrat.", COLOR_BLACK, COLOR_WHITE);
+
+    setText(10, 95, "DRUECKE RECHTS", COLOR_BLUE, COLOR_WHITE);
+    setText(10, 107, "OBEN ZUM STARTEN!", COLOR_BLUE, COLOR_WHITE);
+}
+
 int main(void) {
     // Watchdog Timer stoppen
     WDTCTL = WDTPW | WDTHOLD;
@@ -35,6 +49,14 @@ int main(void) {
             __delay_cycles(200000);
         }
        
+        show_start_screen(keyboard.input); 
+
+        while (!restart_button_pressed()) {
+        }
+
+        while (restart_button_pressed());
+        __delay_cycles(100000);
+
         // Name fertig
         clear_screen();
        
