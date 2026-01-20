@@ -18,8 +18,6 @@ int main(void) {
     input_init();
     audio_init();
    
-    // Optional: Einmalig aufrufen, falls Flash Müll enthält, dann Zeile wieder entfernen
-    // highscore_clear();
 
     while (1) { // Äußere Schleife für kompletten Spiel-Neustart (inkl. Name)
        

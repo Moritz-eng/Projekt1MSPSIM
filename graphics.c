@@ -28,112 +28,141 @@ void draw_cross(int x, int y, uint32_t color) {
     draw(x, y - 3, 1, 7, color);
 }
 
-void draw_circle(int cx, int cy, int r, uint32_t color) {
-    for (int y = -r; y <= r; y++) {
-        for (int x = -r; x <= r; x++) {
-            if (x * x + y * y <= r * r) {
-                draw(cx + x, cy + y, 1, 1, color);
-            }
+/* ================================
+   QUADRAT-ZEICHNEN
+   ================================ */
+void draw_square(int cx, int cy, int half, uint32_t color) {
+    for (int y = -half; y <= half; y++) {
+        for (int x = -half; x <= half; x++) {
+            draw(cx + x, cy + y, 1, 1, color);
         }
     }
 }
 
+/* ================================
+   FADENKREUZ LÖSCHEN
+   ================================ */
 void erase_cross(int x, int y, const Target* target) {
-    // Horizontale Linie löschen
+    // Horizontal
     for (int i = -3; i <= 3; i++) {
         int px = x + i;
         int py = y;
 
-        if (px < 0 || px >= DISPLAY_WIDTH || py < 0 || py >= DISPLAY_HEIGHT) 
+        if (px < 0 || px >= DISPLAY_WIDTH || py < 0 || py >= DISPLAY_HEIGHT)
             continue;
 
-        int dx = px - target->x;
-        int dy = py - target->y;
+        int inside =
+            target->alive &&
+            px >= target->x - target->half_size &&
+            px <= target->x + target->half_size &&
+            py >= target->y - target->half_size &&
+            py <= target->y + target->half_size;
 
-        if (target->alive && dx * dx + dy * dy <= target->radius * target->radius) {
-            draw(px, py, 1, 1, COLOR_RED);
-        } else {
-            draw(px, py, 1, 1, COLOR_WHITE);
-        }
+        draw(px, py, 1, 1, inside ? COLOR_BLUE : COLOR_WHITE);
     }
 
-    // Vertikale Linie löschen
+    // Vertikal
     for (int i = -3; i <= 3; i++) {
         int px = x;
         int py = y + i;
 
-        if (px < 0 || px >= DISPLAY_WIDTH || py < 0 || py >= DISPLAY_HEIGHT) 
+        if (px < 0 || px >= DISPLAY_WIDTH || py < 0 || py >= DISPLAY_HEIGHT)
             continue;
 
-        int dx = px - target->x;
-        int dy = py - target->y;
+        int inside =
+            target->alive &&
+            px >= target->x - target->half_size &&
+            px <= target->x + target->half_size &&
+            py >= target->y - target->half_size &&
+            py <= target->y + target->half_size;
 
-        if (target->alive && dx * dx + dy * dy <= target->radius * target->radius) {
-            draw(px, py, 1, 1, COLOR_RED);
-        } else {
-            draw(px, py, 1, 1, COLOR_WHITE);
-        }
+        draw(px, py, 1, 1, inside ? COLOR_BLUE : COLOR_WHITE);
     }
 }
 
+/* ================================
+   TARGET SPAWNEN
+   ================================ */
 void spawn_target(Target* target) {
-    target->x = target->radius + 1 + rand() % (DISPLAY_WIDTH - 2 * target->radius - 2);
-    target->y = UI_HEIGHT + target->radius + 1 + 
-                rand() % (DISPLAY_HEIGHT - (UI_HEIGHT + 2 * target->radius + 2));
+    target->x = target->half_size + 1 +
+                rand() % (DISPLAY_WIDTH - 2 * target->half_size - 2);
+
+    target->y = UI_HEIGHT + target->half_size + 1 +
+                rand() % (DISPLAY_HEIGHT - (UI_HEIGHT + 2 * target->half_size + 2));
+
     target->vx = (rand() % 3) + 1;
     target->vy = (rand() % 3) + 1;
+
     if (rand() % 2) target->vx = -target->vx;
     if (rand() % 2) target->vy = -target->vy;
+
     target->alive = 1;
-    
-    draw_circle(target->x, target->y, target->radius, COLOR_BLUE);
+
+    draw_square(target->x, target->y, target->half_size, COLOR_BLUE);
 }
 
+/* ================================
+   TARGET UPDATE (BEWEGUNG)
+   ================================ */
 void update_target(Target* target) {
     if (!target->alive) return;
 
     int old_x = target->x;
     int old_y = target->y;
 
-    // Bewegung
+    // Neue Position berechnen
     target->x += target->vx;
     target->y += target->vy;
 
-    // Wände abprallen
-    if (target->x - target->radius < 0 || target->x + target->radius > DISPLAY_WIDTH) {
+    // Wandkollision prüfen und Position korrigieren
+    if (target->x - target->half_size < 0) {
+        target->x = target->half_size;
         target->vx = -target->vx;
     }
-    if (target->y - target->radius < UI_HEIGHT + 2 || target->y + target->radius > DISPLAY_HEIGHT) {
+    if (target->x + target->half_size >= DISPLAY_WIDTH) {
+        target->x = DISPLAY_WIDTH - target->half_size - 1;
+        target->vx = -target->vx;
+    }
+    if (target->y - target->half_size < UI_HEIGHT) {
+        target->y = UI_HEIGHT + target->half_size;
+        target->vy = -target->vy;
+    }
+    if (target->y + target->half_size >= DISPLAY_HEIGHT) {
+        target->y = DISPLAY_HEIGHT - target->half_size - 1;
         target->vy = -target->vy;
     }
 
-    // Bounding Box berechnen
-    int min_x = (old_x < target->x ? old_x : target->x) - target->radius;
-    int max_x = (old_x > target->x ? old_x : target->x) + target->radius;
-    int min_y = (old_y < target->y ? old_y : target->y) - target->radius;
-    int max_y = (old_y > target->y ? old_y : target->y) + target->radius;
+    // Minimales Rechteck berechnen, das sich verändert hat
+    int min_x = old_x < target->x ? old_x - target->half_size : target->x - target->half_size;
+    int max_x = old_x > target->x ? old_x + target->half_size : target->x + target->half_size;
+    int min_y = old_y < target->y ? old_y - target->half_size : target->y - target->half_size;
+    int max_y = old_y > target->y ? old_y + target->half_size : target->y + target->half_size;
 
-    // Pixel-differenz zeichnen
-    for (int py = min_y; py <= max_y; py++) {
-        if (py < 0 || py >= DISPLAY_HEIGHT) continue;
-        
-        for (int px = min_x; px <= max_x; px++) {
-            if (px < 0 || px >= DISPLAY_WIDTH) continue;
+    for (int y = min_y; y <= max_y; y++) {
+        if (y < 0 || y >= DISPLAY_HEIGHT) continue;
 
-            int old_in = (px - old_x) * (px - old_x) + (py - old_y) * (py - old_y) 
-                         <= target->radius * target->radius;
-            int new_in = (px - target->x) * (px - target->x) + (py - target->y) * (py - target->y) 
-                         <= target->radius * target->radius;
+        for (int x = min_x; x <= max_x; x++) {
+            // Prüfen, ob Pixel im alten Quadrat war
+            int in_old = (x >= old_x - target->half_size && x <= old_x + target->half_size &&
+                          y >= old_y - target->half_size && y <= old_y + target->half_size);
+            // Prüfen, ob Pixel im neuen Quadrat ist
+            int in_new = (x >= target->x - target->half_size && x <= target->x + target->half_size &&
+                          y >= target->y - target->half_size && y <= target->y + target->half_size);
 
-            if (old_in && !new_in) {
-                draw(px, py, 1, 1, COLOR_WHITE);
-            } else if (!old_in && new_in) {
-                draw(px, py, 1, 1, COLOR_BLUE);
+            if (in_old && !in_new) {
+                draw(x, y, 1, 1, COLOR_WHITE); // nur alten Pixel löschen
+            } else if (!in_old && in_new) {
+                draw(x, y, 1, 1, COLOR_BLUE);  // nur neuen Pixel zeichnen
             }
         }
     }
 }
 
+
+
+/* ================================
+   STATUSZEILE
+   ================================ */
 void display_status(int score, int counter) {
     char buf[16];
 

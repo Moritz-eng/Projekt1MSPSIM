@@ -16,7 +16,7 @@ void game_init(GameState* state) {
     state->crosshair.old_x = state->crosshair.x;
     state->crosshair.old_y = state->crosshair.y;
     
-    state->target.radius = TARGET_RADIUS;
+    state->target.half_size = TARGET_HALF_SIZE;
     state->target.alive = 1;
 }
 
@@ -83,7 +83,7 @@ void game_handle_input(GameState* state) {
 
         if (state->target.alive && check_hit(&state->crosshair, &state->target)) {
             state->score++;
-            draw_circle(state->target.x, state->target.y, state->target.radius, COLOR_WHITE);
+            draw_square(state->target.x, state->target.y, state->target.half_size, COLOR_WHITE);
             spawn_target(&state->target);
         }
     }
@@ -91,7 +91,10 @@ void game_handle_input(GameState* state) {
 }
 
 int check_hit(const Crosshair* crosshair, const Target* target) {
-    int dx = crosshair->x - target->x;
-    int dy = crosshair->y - target->y;
-    return (dx * dx + dy * dy <= target->radius * target->radius);
+    if (!target->alive) return 0;
+
+    return (crosshair->x >= target->x - target->half_size &&
+            crosshair->x <= target->x + target->half_size &&
+            crosshair->y >= target->y - target->half_size &&
+            crosshair->y <= target->y + target->half_size);
 }

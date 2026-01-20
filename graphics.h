@@ -9,7 +9,7 @@ typedef struct {
     int y;
     int vx;
     int vy;
-    int radius;
+    int half_size;
     int alive;
 } Target;
 
@@ -26,7 +26,7 @@ void graphics_init(void);
 
 // Zeichenfunktionen
 void draw_cross(int x, int y, uint32_t color);
-void draw_circle(int cx, int cy, int r, uint32_t color);
+void draw_square(int cx, int cy, int half_size, uint32_t color);
 void erase_cross(int x, int y, const Target* target);
 void display_status(int score, int counter);
 

@@ -15,7 +15,7 @@
 
 // Spiel Konfiguration
 #define GAME_START_VALUE 300
-#define TARGET_RADIUS 6
+#define TARGET_HALF_SIZE 4
 
 // Pin Definitionen
 #define BUTTON BIT7          // P3.7 Schuss-Button

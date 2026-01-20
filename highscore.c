@@ -110,13 +110,3 @@ void highscore_show(void) {
    
     setText(10, 110, "UP RIGHT BUTTON", COLOR_BLUE, COLOR_BLACK);
 }
-
-void highscore_clear(void) {
-    // Leeres Array erzeugen und schreiben
-    HighscoreEntry empty[MAX_HIGHSCORES];
-    for(int i=0; i<MAX_HIGHSCORES; i++) {
-        empty[i].score = 0;
-        strcpy(empty[i].name, "---");
-    }
-    write_to_flash(empty);
-}
