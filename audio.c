@@ -42,9 +42,7 @@ void buzzer_stop(void) {
 }
 
 void play_shot_sound(void) {
-    // Kurzer Piep
+    
     buzzer_start();
-    // Etwas warten (Schussdauer)
-    __delay_cycles(200000); // bei 1MHz ca 0.2s, bei schnellerem Takt entsprechend kürzer
-    buzzer_stop();
+   
 }

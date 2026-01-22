@@ -18,6 +18,7 @@ void game_init(GameState* state) {
     
     state->target.half_size = TARGET_HALF_SIZE;
     state->target.alive = 1;
+    state->sound_timer = 0;
 }
 
 void game_start(GameState* state) {
@@ -39,13 +40,22 @@ void game_start(GameState* state) {
 void game_update(GameState* state) {
     if (!state->running) return;
 
-    // Counter runterzählen
+    
+    if (state->sound_timer > 0) {
+        state->sound_timer--;
+        if (state->sound_timer == 0) 
+             buzzer_stop(); 
+            
+    }    
+
     if (state->counter > 0) {
         state->counter--;
     } else {
         state->running = 0;
+        buzzer_stop();
         return;
     }
+
 
     // Joystick aktualisieren
     joystick_update(&state->crosshair, MAX_SPEED);
@@ -77,6 +87,7 @@ void game_handle_input(GameState* state) {
     // Neustart-Button prüfen
     int restart_pressed = restart_button_pressed();
     if (restart_pressed && !state->restart_prev) {
+        buzzer_stop();
         clear_screen();
         game_start(state);
     }
@@ -88,6 +99,7 @@ void game_handle_input(GameState* state) {
     int pressed = button_pressed();
     if (pressed && !state->button_prev) {
         play_shot_sound();
+        state->sound_timer = 2;
 
         if (state->target.alive && check_hit(&state->crosshair, &state->target)) {
             state->score++;

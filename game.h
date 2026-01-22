@@ -12,6 +12,7 @@ typedef struct {
     Target target;
     int button_prev;
     int restart_prev;
+    int sound_timer;
 } GameState;
 
 // Initialisierung

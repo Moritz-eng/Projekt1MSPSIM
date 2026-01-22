@@ -53,9 +53,13 @@ int main(void) {
     input_init();
     audio_init();
 
+    UCSCTL4 |= SELA_2;
+    TA0CCR0 = 655;
+    TA0CTL = TASSEL_1 | MC_1 | TACLR;
+
     // Anleitung vor der Namenseingabe anzeigen
     show_instruction_screen();
-   
+
 
     while (1) { // Äußere Schleife für kompletten Spiel-Neustart (inkl. Name)
        
@@ -95,15 +99,18 @@ int main(void) {
 
         // Hauptspiel-Loop
         while (game.running) {
+            while (!(TA0CTL & TAIFG));
+            TA0CTL &= ~TAIFG;
+
             draw_ui_separator();
             game_handle_input(&game);
             game_update(&game);
             display_status(game.score, game.counter);
-            __delay_cycles(10000);
         }
+        buzzer_stop();
 
         // 3. Spiel Vorbei - Highscore Logik
-        play_shot_sound(); // Kleiner Soundeffekt am Ende
+        
        
         // Highscore speichern (falls gut genug)
         highscore_add(keyboard.input, game.score);
