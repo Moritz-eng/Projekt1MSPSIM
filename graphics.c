@@ -181,4 +181,5 @@ void display_status(int score, int counter) {
         setText(0, 10, buf, COLOR_BLACK, COLOR_WHITE);
         last_counter = counter;
     }
+
 }

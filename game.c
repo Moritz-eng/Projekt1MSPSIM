@@ -29,7 +29,9 @@ void game_start(GameState* state) {
     state->crosshair.y = DISPLAY_HEIGHT / 2;
     state->crosshair.old_x = state->crosshair.x;
     state->crosshair.old_y = state->crosshair.y;
-    
+
+    setText(78, 1, "Restart", COLOR_RED, COLOR_WHITE);
+        
     spawn_target(&state->target);
     draw_cross(state->crosshair.x, state->crosshair.y, COLOR_RED);
 }
