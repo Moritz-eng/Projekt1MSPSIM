@@ -9,6 +9,27 @@
 #include "ST7735.h"
 #include "highscore.h"
 
+void show_instruction_screen(void) {
+    clear_screen();
+   
+    setText(15, 10, "ANLEITUNG", COLOR_RED, COLOR_WHITE);
+    draw(15, 22, 70, 1, COLOR_BLACK); // Unterstreichung
+
+    setText(5, 40, "- Bewegung:", COLOR_BLACK, COLOR_WHITE);
+    setText(15, 52, "Joystick", COLOR_BLUE, COLOR_WHITE);
+
+    setText(5, 70, "- Schuss/OK:", COLOR_BLACK, COLOR_WHITE);
+    setText(15, 82, "Unterer Knopf", COLOR_BLUE, COLOR_WHITE);
+
+    setText(5, 100, "- Start/Reset:", COLOR_BLACK, COLOR_WHITE);
+    setText(15, 112, "Oberer Knopf", COLOR_BLUE, COLOR_WHITE);
+
+    // Warten bis der Restart-Button (R. oben) gedrückt wird
+    while (!restart_button_pressed());
+    while (restart_button_pressed()); // Entprellen
+    __delay_cycles(100000);
+}
+
 void show_start_screen(char* name) {
     clear_screen();
 
@@ -31,6 +52,9 @@ int main(void) {
     graphics_init();
     input_init();
     audio_init();
+
+    // Anleitung vor der Namenseingabe anzeigen
+    show_instruction_screen();
    
 
     while (1) { // Äußere Schleife für kompletten Spiel-Neustart (inkl. Name)
