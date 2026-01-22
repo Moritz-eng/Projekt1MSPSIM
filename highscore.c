@@ -108,5 +108,5 @@ void highscore_show(void) {
         setText(10, y_pos, buf, color, COLOR_BLACK);
     }
    
-    setText(10, 110, "UP RIGHT BUTTON", COLOR_BLUE, COLOR_BLACK);
+    setText(10, 110, "Press Restart", COLOR_BLUE, COLOR_BLACK);
 }

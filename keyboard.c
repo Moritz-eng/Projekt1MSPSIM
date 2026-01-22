@@ -50,7 +50,7 @@ void keyboard_draw(void) {
         setText(x + 3, y + 2, buf, COLOR_BLACK, COLOR_WHITE);
     }
     else{
-        setText(x + 3, y +2, "Kein Name", COLOR_BLACK, COLOR_WHITE);
+        setText(x + 3, y +2, "No Name", COLOR_BLACK, COLOR_WHITE);
     }
 
     for (int row = 0; row < 3; row++) {

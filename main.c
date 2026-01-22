@@ -12,21 +12,21 @@
 void show_instruction_screen(void) {
     clear_screen();
    
-    setText(15, 10, "ANLEITUNG", COLOR_RED, COLOR_WHITE);
+    setText(15, 10, "INSTRUCTIONS", COLOR_RED, COLOR_WHITE);
     draw(15, 22, 70, 1, COLOR_BLACK); // Unterstreichung
 
-    setText(5, 40, "- Bewegung:", COLOR_BLACK, COLOR_WHITE);
+    setText(5, 40, "- MOVE", COLOR_BLACK, COLOR_WHITE);
     setText(15, 52, "Joystick", COLOR_BLUE, COLOR_WHITE);
 
-    setText(5, 70, "- Schuss/OK:", COLOR_BLACK, COLOR_WHITE);
-    setText(15, 82, "Unterer Knopf", COLOR_BLUE, COLOR_WHITE);
+    setText(5, 70, "- SHOOT/OK:", COLOR_BLACK, COLOR_WHITE);
+    setText(15, 82, "R. LOWER BUTTON", COLOR_BLUE, COLOR_WHITE);
 
-    setText(5, 100, "- Start/Reset:", COLOR_BLACK, COLOR_WHITE);
-    setText(15, 112, "Oberer Knopf", COLOR_BLUE, COLOR_WHITE);
+    setText(5, 100, "- Reset:", COLOR_BLACK, COLOR_WHITE);
+    setText(15, 112, "R. UP BUTTON", COLOR_BLUE, COLOR_WHITE);
 
     // Warten bis der Restart-Button (R. oben) gedrückt wird
-    while (!restart_button_pressed());
-    while (restart_button_pressed()); // Entprellen
+    while (!button_pressed());
+    while (button_pressed()); // Entprellen
     __delay_cycles(100000);
 }
 
@@ -34,14 +34,14 @@ void show_start_screen(char* name) {
     clear_screen();
 
     char buf[32];
-    sprintf(buf, "Hallo %s!", name);
+    sprintf(buf, "Hello %s!", name);
     setText(20, 30, buf, COLOR_RED, COLOR_WHITE);
 
-    setText(10, 60, "Ziel: Treffe das", COLOR_BLACK, COLOR_WHITE);
-    setText(10, 72, "blaue Quadrat.", COLOR_BLACK, COLOR_WHITE);
+    setText(10, 60, "Goal: Shoot the", COLOR_BLACK, COLOR_WHITE);
+    setText(10, 72, "blue Target.", COLOR_BLACK, COLOR_WHITE);
 
-    setText(10, 95, "DRUECKE RECHTS", COLOR_BLUE, COLOR_WHITE);
-    setText(10, 107, "OBEN ZUM STARTEN!", COLOR_BLUE, COLOR_WHITE);
+    setText(10, 95, "PRESS OK", COLOR_BLUE, COLOR_WHITE);
+    setText(10, 107, "TO START!", COLOR_BLUE, COLOR_WHITE);
 }
 
 int main(void) {
@@ -79,10 +79,10 @@ int main(void) {
        
         show_start_screen(keyboard.input); 
 
-        while (!restart_button_pressed()) {
+        while (!button_pressed()) {
         }
 
-        while (restart_button_pressed());
+        while (button_pressed());
         __delay_cycles(100000);
 
         // Name fertig
