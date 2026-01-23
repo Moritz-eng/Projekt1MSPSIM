@@ -14,7 +14,7 @@
 #define MAX_SPEED 6
 
 // Spiel Konfiguration
-#define GAME_START_VALUE 300
+#define GAME_START_VALUE 600
 #define TARGET_HALF_SIZE 4
 
 // Pin Definitionen
