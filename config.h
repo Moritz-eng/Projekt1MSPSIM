@@ -3,30 +3,25 @@
 
 #include <stdint.h>
 
-// Display Konfiguration
 #define DISPLAY_WIDTH 128
 #define DISPLAY_HEIGHT 128
 #define UI_HEIGHT 25
 
-// Joystick Konfiguration
 #define JOY_CENTER 2048
 #define DEADZONE 5
 #define MAX_SPEED 6
 
-// Spiel Konfiguration
 #define GAME_START_VALUE 600
 #define TARGET_HALF_SIZE 4
 
-// Pin Definitionen
-#define BUTTON BIT7          // P3.7 Schuss-Button
-#define RESTART_BUTTON BIT0  // P4.0 Neustart
-                             // P2.4 Display Backlight (Jumper Pos.3) passiert in ST7735.c
-#define BUZZER BIT5          // P2.5 Buzzer
+#define BUTTON BIT7
+#define RESTART_BUTTON BIT0
 
-// Farben (RGB 24-bit)
+#define BUZZER BIT5
+
 #define COLOR_WHITE 0xFFFFFFL
 #define COLOR_BLACK 0x000000L
 #define COLOR_BLUE 0xFF0000L
 #define COLOR_RED 0x0000FFL
 
-#endif // CONFIG_H
+#endif

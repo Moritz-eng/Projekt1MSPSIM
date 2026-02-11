@@ -1,120 +1,112 @@
 #include "game.h"
+
+#include "audio.h"
 #include "config.h"
 #include "graphics.h"
 #include "input.h"
-#include "audio.h"
 
 void game_init(GameState* state) {
-    state->score = 0;
-    state->counter = 0;
-    state->running = 0;
-    state->button_prev = 1;
-    state->restart_prev = 1;
-    
-    state->crosshair.x = DISPLAY_WIDTH / 2;
-    state->crosshair.y = DISPLAY_HEIGHT / 2;
-    state->crosshair.old_x = state->crosshair.x;
-    state->crosshair.old_y = state->crosshair.y;
-    
-    state->target.half_size = TARGET_HALF_SIZE;
-    state->target.alive = 1;
-    state->sound_timer = 0;
+  state->score = 0;
+  state->counter = 0;
+  state->running = 0;
+  state->button_prev = 1;
+  state->restart_prev = 1;
+
+  state->crosshair.x = DISPLAY_WIDTH / 2;
+  state->crosshair.y = DISPLAY_HEIGHT / 2;
+  state->crosshair.old_x = state->crosshair.x;
+  state->crosshair.old_y = state->crosshair.y;
+
+  state->target.half_size = TARGET_HALF_SIZE;
+  state->target.alive = 1;
+  state->sound_timer = 0;
 }
 
 void game_start(GameState* state) {
-    state->score = 0;
-    state->counter = GAME_START_VALUE;
-    state->running = 1;
-    
-    state->crosshair.x = DISPLAY_WIDTH / 2;
-    state->crosshair.y = DISPLAY_HEIGHT / 2;
-    state->crosshair.old_x = state->crosshair.x;
-    state->crosshair.old_y = state->crosshair.y;
+  state->score = 0;
+  state->counter = GAME_START_VALUE;
+  state->running = 1;
 
-    setText(78, 1, "Restart", COLOR_RED, COLOR_WHITE);
-        
-    spawn_target(&state->target);
-    draw_cross(state->crosshair.x, state->crosshair.y, COLOR_RED);
+  state->crosshair.x = DISPLAY_WIDTH / 2;
+  state->crosshair.y = DISPLAY_HEIGHT / 2;
+  state->crosshair.old_x = state->crosshair.x;
+  state->crosshair.old_y = state->crosshair.y;
+
+  setText(78, 1, "Restart", COLOR_RED, COLOR_WHITE);
+
+  spawn_target(&state->target);
+  draw_cross(state->crosshair.x, state->crosshair.y, COLOR_RED);
 }
 
 void game_update(GameState* state) {
-    if (!state->running) return;
+  if (!state->running) return;
 
-    
-    if (state->sound_timer > 0) {
-        state->sound_timer--;
-        if (state->sound_timer == 0) 
-             buzzer_stop(); 
-            
-    }    
+  if (state->sound_timer > 0) {
+    state->sound_timer--;
+    if (state->sound_timer == 0) buzzer_stop();
+  }
 
-    if (state->counter > 0) {
-        state->counter--;
-    } else {
-        state->running = 0;
-        buzzer_stop();
-        return;
+  if (state->counter > 0) {
+    state->counter--;
+  } else {
+    state->running = 0;
+    buzzer_stop();
+    return;
+  }
+
+  joystick_update(&state->crosshair, MAX_SPEED);
+
+  int target_moved = state->target.alive;
+  if (state->target.alive) {
+    update_target(&state->target);
+  }
+
+  if (state->crosshair.x != state->crosshair.old_x ||
+      state->crosshair.y != state->crosshair.old_y || target_moved) {
+    if (state->crosshair.x != state->crosshair.old_x ||
+        state->crosshair.y != state->crosshair.old_y) {
+      erase_cross(state->crosshair.old_x, state->crosshair.old_y,
+                  &state->target);
     }
 
+    draw_cross(state->crosshair.x, state->crosshair.y, COLOR_RED);
 
-    // Joystick aktualisieren
-    joystick_update(&state->crosshair, MAX_SPEED);
-    
-    // Target aktualisieren
-    int target_moved = state->target.alive;
-    if (state->target.alive) {
-        update_target(&state->target);
-    }
-
-    // Fadenkreuz aktualisieren
-    if (state->crosshair.x != state->crosshair.old_x || 
-        state->crosshair.y != state->crosshair.old_y ||
-        target_moved) {
-        
-        if (state->crosshair.x != state->crosshair.old_x || 
-        state->crosshair.y != state->crosshair.old_y){
-        erase_cross(state->crosshair.old_x, state->crosshair.old_y, &state->target);
-        }
-
-        draw_cross(state->crosshair.x, state->crosshair.y, COLOR_RED);
-        
-        state->crosshair.old_x = state->crosshair.x;
-        state->crosshair.old_y = state->crosshair.y;
-    }
+    state->crosshair.old_x = state->crosshair.x;
+    state->crosshair.old_y = state->crosshair.y;
+  }
 }
 
 void game_handle_input(GameState* state) {
-    // Neustart-Button prüfen
-    int restart_pressed = restart_button_pressed();
-    if (restart_pressed && !state->restart_prev) {
-        buzzer_stop();
-        clear_screen();
-        game_start(state);
+  int restart_pressed = restart_button_pressed();
+  if (restart_pressed && !state->restart_prev) {
+    buzzer_stop();
+    clear_screen();
+    game_start(state);
+  }
+  state->restart_prev = restart_pressed;
+
+  if (!state->running) return;
+
+  int pressed = button_pressed();
+  if (pressed && !state->button_prev) {
+    play_shot_sound();
+    state->sound_timer = 2;
+
+    if (state->target.alive && check_hit(&state->crosshair, &state->target)) {
+      state->score++;
+      draw_square(state->target.x, state->target.y, state->target.half_size,
+                  COLOR_WHITE);
+      spawn_target(&state->target);
     }
-    state->restart_prev = restart_pressed;
-
-    if (!state->running) return;
-
-    // Schuss-Button prüfen
-    int pressed = button_pressed();
-    if (pressed && !state->button_prev) {
-        play_shot_sound();
-        state->sound_timer = 2;
-
-        if (state->target.alive && check_hit(&state->crosshair, &state->target)) {
-            state->score++;
-            draw_square(state->target.x, state->target.y, state->target.half_size, COLOR_WHITE);
-            spawn_target(&state->target);
-        }
-    }
-    state->button_prev = pressed;
+  }
+  state->button_prev = pressed;
 }
 
 int check_hit(const Crosshair* crosshair, const Target* target) {
-    if (!target->alive) return 0;
+  if (!target->alive) return 0;
 
-    return (crosshair->x >= target->x - target->half_size &&
-            crosshair->x <= target->x + target->half_size &&
-            crosshair->y >= target->y - target->half_size &&
-            crosshair->y <= target->y + target->half_size);
+  return (crosshair->x >= target->x - target->half_size &&
+          crosshair->x <= target->x + target->half_size &&
+          crosshair->y >= target->y - target->half_size &&
+          crosshair->y <= target->y + target->half_size);
 }
