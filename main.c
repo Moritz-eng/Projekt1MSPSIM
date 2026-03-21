@@ -1,6 +1,6 @@
 #include <msp430.h>
+#include <stdio.h>
 #include <string.h>
-
 #include "ST7735.h"
 #include "audio.h"
 #include "config.h"
@@ -12,7 +12,7 @@
 
 void show_instruction_screen(void) {
   clear_screen();
-
+  
   setText(15, 10, "INSTRUCTIONS", COLOR_RED, COLOR_WHITE);
   draw(15, 22, 70, 1, COLOR_BLACK);
 

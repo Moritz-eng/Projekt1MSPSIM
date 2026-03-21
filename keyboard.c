@@ -1,11 +1,10 @@
-#include "keyboard.h"
-
+#include <stdio.h>
 #include <string.h>
-
 #include "ST7735.h"
 #include "config.h"
 #include "graphics.h"
 #include "input.h"
+#include "keyboard.h"
 
 static const char* keyboard_layout[] = {"ABCDEFGHIJ", "KLMNOPQRST", "UVWXYZ"};
 

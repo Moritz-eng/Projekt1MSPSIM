@@ -1,6 +1,6 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
-
+#include "ST7735.h"
 #include <stdint.h>
 
 typedef struct {

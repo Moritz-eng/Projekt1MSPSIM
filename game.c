@@ -5,6 +5,7 @@
 #include "graphics.h"
 #include "input.h"
 
+
 void game_init(GameState* state) {
   state->score = 0;
   state->counter = 0;
