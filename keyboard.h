@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef struct {
+typedef struct { //Zentrale Struktur
   int cursor_x;
   int cursor_y;
   char input[16];

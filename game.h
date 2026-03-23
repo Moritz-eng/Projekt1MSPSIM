@@ -3,10 +3,10 @@
 
 #include "graphics.h"
 
-typedef struct {
-  int score;
+typedef struct { //Datenstruktur aber verletzung der single responsebility
+  int score; //aktuelle Punkte
   int counter;
-  int running;
+  int running; //1 → Spiel läuft 0 → beendet
   Crosshair crosshair;
   Target target;
   int button_prev;

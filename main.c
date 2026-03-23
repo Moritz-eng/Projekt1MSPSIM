@@ -12,7 +12,7 @@
 
 void show_instruction_screen(void) {
   clear_screen();
-  
+
   setText(15, 10, "INSTRUCTIONS", COLOR_RED, COLOR_WHITE);
   draw(15, 22, 70, 1, COLOR_BLACK);
 
@@ -52,8 +52,8 @@ int main(void) {
   audio_init();
 
   UCSCTL4 |= SELA_2;
-  TA0CCR0 = 655;
-  TA0CTL = TASSEL_1 | MC_1 | TACLR;
+  TA0CCR0 = 655; // Zählwert (32kHz → 655 → ca. 30ms
+  TA0CTL = TASSEL_1 | MC_1 | TACLR; // ACLK (32kHz), Aufwärtszählen
 
   show_instruction_screen();
 
@@ -87,12 +87,12 @@ int main(void) {
 
     GameState game;
     game_init(&game);
-    game_start(&game);
+    game_start(&game); //running auf 1
 
     while (game.running) {
-      while (!(TA0CTL & TAIFG));
-      TA0CTL &= ~TAIFG;
-
+      while (!(TA0CTL & TAIFG));  // Warten auf Timer-Überlauf  CPU wartet UNTÄTIG!
+      TA0CTL &= ~TAIFG;           // Flag löschen
+      // Hier passiert das Spiel pro Frame
       draw_ui_separator();
       game_handle_input(&game);
       game_update(&game);
