@@ -1,43 +1,42 @@
 #include "graphics.h"
-
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "ST7735.h"
 #include "config.h"
 
 static int last_score = -1;
 static int last_counter = -1;
-
+//Display initialisieren Bildschirm leeren
 void graphics_init(void) {
   ST7735_interface_init();
   ST7735_display_init();
   clear_screen();
 }
-
+//kompletter Screen wird weiß gefüllt
 void clear_screen(void) {
   draw(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, COLOR_WHITE);
+  //zwingt späteres UI zum Neuzeichnen
   last_score = -1;
   last_counter = -1;
 }
-
+//zeichnet horizontale Linie
 void draw_ui_separator(void) {
   draw(0, UI_HEIGHT, DISPLAY_WIDTH, 1, COLOR_BLACK);
 }
-
+//Fadenkreuz
 void draw_cross(int x, int y, uint32_t color) {
   draw(x - 3, y, 7, 1, color);
   draw(x, y - 3, 1, 7, color);
 }
-
+//Quadrat
 void draw_square(int cx, int cy, int half, uint32_t color) {
   for (int y = -half; y <= half; y++) {
     for (int x = -half; x <= half; x++) {
       draw(cx + x, cy + y, 1, 1, color);
     }
   }
-}
-
+} 
+//fadenkreuz löschen Incremental Rendering
 void erase_cross(int x, int y, const Target* target) {
   for (int i = -3; i <= 3; i++) {
     int px = x + i;
@@ -51,7 +50,7 @@ void erase_cross(int x, int y, const Target* target) {
                  py >= target->y - target->half_size &&
                  py <= target->y + target->half_size;
 
-    draw(px, py, 1, 1, inside ? COLOR_BLUE : COLOR_WHITE);
+    draw(px, py, 1, 1, inside ? COLOR_BLUE : COLOR_WHITE);//intelligente Farbauswahl
   }
 
   for (int i = -3; i <= 3; i++) {
@@ -66,10 +65,10 @@ void erase_cross(int x, int y, const Target* target) {
                  py >= target->y - target->half_size &&
                  py <= target->y + target->half_size;
 
-    draw(px, py, 1, 1, inside ? COLOR_BLUE : COLOR_WHITE);
+    draw(px, py, 1, 1, inside ? COLOR_BLUE : COLOR_WHITE);//intelligentes Farbauswahl
   }
 }
-
+//Target Spawn hätte auch in game.c gehört
 void spawn_target(Target* target) {
   target->x = target->half_size + 1 +
               rand() % (DISPLAY_WIDTH - 2 * target->half_size - 2);
@@ -88,7 +87,7 @@ void spawn_target(Target* target) {
 
   draw_square(target->x, target->y, target->half_size, COLOR_BLUE);
 }
-
+// Differenz-Rendering update target Incremental Rendering
 void update_target(Target* target) {
   if (!target->alive) return;
 
@@ -142,7 +141,7 @@ void update_target(Target* target) {
          old_y - target->y, COLOR_BLUE);
   }
 }
-
+//Statusanzeige
 void display_status(int score, int counter) {
   char buf[16];
 

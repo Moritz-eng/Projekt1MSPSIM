@@ -1,5 +1,4 @@
 #include "game.h"
-
 #include "audio.h"
 #include "config.h"
 #include "graphics.h"
@@ -45,7 +44,8 @@ void game_update(GameState* state) {
   //kurzer Sound nach Schuss
   if (state->sound_timer > 0) {
     state->sound_timer--;
-    if (state->sound_timer == 0) buzzer_stop();
+    if (state->sound_timer == 0) 
+    buzzer_stop();
   }
   //Countdown → Game Over
   if (state->counter > 0) {
@@ -91,8 +91,9 @@ void game_handle_input(GameState* state) {
   if (!state->running) return;
 
   int pressed = button_pressed();
+  //Schießen
   if (pressed && !state->button_prev) {
-    play_shot_sound();
+    play_shot_sound();//Sound
     state->sound_timer = 2;
 
     if (state->target.alive && check_hit(&state->crosshair, &state->target)) {
@@ -104,10 +105,10 @@ void game_handle_input(GameState* state) {
   }
   state->button_prev = pressed;
 }
-
+//Kollisionsprüfung
 int check_hit(const Crosshair* crosshair, const Target* target) {
   if (!target->alive) return 0;
-
+  //Punkt liegt im Quadrat
   return (crosshair->x >= target->x - target->half_size &&
           crosshair->x <= target->x + target->half_size &&
           crosshair->y >= target->y - target->half_size &&

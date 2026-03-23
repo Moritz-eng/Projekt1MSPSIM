@@ -1,15 +1,13 @@
 #include "highscore.h"
-
 #include <msp430.h>
 #include <stdio.h>
 #include <string.h>
-
 #include "ST7735.h"
 #include "config.h"
 
-#define SEGMENT_D_START 0x1800
+#define SEGMENT_D_START 0x1800 //Flash speicher
 
-static HighscoreEntry *flash_scores = (HighscoreEntry *)SEGMENT_D_START;
+static HighscoreEntry *flash_scores = (HighscoreEntry *)SEGMENT_D_START; //flash_scores zeigt direkt auf den Flash-Bereich, als wäre es ein Array.
 
 void write_to_flash(HighscoreEntry entries[MAX_HIGHSCORES]) {
   unsigned int *flash_ptr = (unsigned int *)SEGMENT_D_START;
@@ -17,28 +15,27 @@ void write_to_flash(HighscoreEntry entries[MAX_HIGHSCORES]) {
   int i;
   int word_count = sizeof(HighscoreEntry) * MAX_HIGHSCORES / 2;
 
-  FCTL3 = FWKEY;
-  FCTL1 = FWKEY + ERASE;
+  FCTL3 = FWKEY;          //Unlock Flash
+  FCTL1 = FWKEY + ERASE;  //Erase (löschen)
+  *flash_ptr = 0;         // Dummy write startet das Löschen
 
-  *flash_ptr = 0;
+  while (FCTL3 & BUSY);   //Warten bis fertig
 
-  while (FCTL3 & BUSY);
+  FCTL1 = FWKEY + WRT;    //Write aktivieren
 
-  FCTL1 = FWKEY + WRT;
-
-  for (i = 0; i < word_count; i++) {
+  for (i = 0; i < word_count; i++) { //Daten Wort für Wort schreiben
     *flash_ptr++ = *ram_ptr++;
     while (FCTL3 & BUSY);
   }
 
   FCTL1 = FWKEY;
-  FCTL3 = FWKEY + LOCK;
+  FCTL3 = FWKEY + LOCK;   //Flash wieder sperren
 }
 
 void highscore_add(char *name, int score) {
   HighscoreEntry current_scores[MAX_HIGHSCORES];
   int i, j;
-
+  //Flash → RAM kopieren
   for (i = 0; i < MAX_HIGHSCORES; i++) {
     if (flash_scores[i].score == -1 || flash_scores[i].score == 0xFFFF) {
       current_scores[i].score = 0;
@@ -52,12 +49,13 @@ void highscore_add(char *name, int score) {
     return;
   }
 
+  //Prüfen ob Score gut genug ist
   for (i = 0; i < MAX_HIGHSCORES; i++) {
     if (score > current_scores[i].score) {
       for (j = MAX_HIGHSCORES - 1; j > i; j--) {
-        current_scores[j] = current_scores[j - 1];
+        current_scores[j] = current_scores[j - 1]; //Einfügen + Sortieren
       }
-
+      
       current_scores[i].score = score;
       strncpy(current_scores[i].name, name, MAX_NAME_LEN);
       current_scores[i].name[MAX_NAME_LEN] = '\0';
@@ -68,6 +66,7 @@ void highscore_add(char *name, int score) {
   write_to_flash(current_scores);
 }
 
+//Zeigt die Highscores auf einem Display (ST7735).
 void highscore_show(void) {
   char buf[32];
   int i;
